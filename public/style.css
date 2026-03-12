@@ -1,0 +1,18 @@
+*{
+    padding: 0;
+    border: 0;
+    margin: 0;
+}
+.header{
+    height: 60px;
+    width: 100%;
+    background-color: #5BD0D6;
+}
+.slideshow{
+    margin-top: 90px;
+    display: flex;
+    align-items: center;
+    height:100px;
+    width:90%;
+    background-color: #5BD0D6;
+}

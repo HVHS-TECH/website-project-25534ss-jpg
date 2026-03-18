@@ -1,20 +1,74 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
-    <link rel="stylesheet" href="style.css">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HVHS Lost & Found</title>
+    <link rel="icon" href="https://hvhs.school.nz/wp-content/uploads/2023/12/cropped-favicon-192x192.jpg" sizes="192x192">
+<link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <div class="header"></div>
-    <div class="slideshow"></div>
-    <div class="text"></div>
-    <div class="pic"></div>
-    <div class="random text"></div>
-    <div class="random text"></div>
-    <div class="random text"></div>
+
+<div class="start">
+    <div class="left">
+        <img src="hvhs4.png" class="image">
+        <div class="text-group">
+            <h2 class="text1">Hutt Valley High School</h2>
+            <p class="text2">Te Kura Tuarua o Te Awakairangi</p>
+        </div>
+    </div>
+
+    <div class="nav">
+        <ul>
+            <li><a id="login-link">Login</a></li>
+            <li><a id="history-link">History</a></li>
+            <li><a href="about.html">About</a></li>
+        </ul>
+    </div>
+</div>
+
+<button id="add-popup-button" class="admin-only add-button">+</button>
+<button id="logout-btn" class="logout-btn admin-only">Logout</button>
+
+<div class="search-bar">
+    <input type="text" id="myInput" placeholder="Search items...">
+</div>
+
+<div class="container"></div>
+
+<div class="popup-overlay"></div>
+<div class="popup-box">
+    <h2 id="popup-title">Add Item</h2>
+    <input type="text" id="info-title-input" placeholder="Item title">
+    <input type="text" id="info-location" placeholder="Location to collect">
+    <textarea id="info-description" placeholder="Description"></textarea>
+    <button id="add-info">Save</button>
+    <button id="cancel-popup">Cancel</button>
+</div>
+
+<div class="login-overlay"></div>
+<div class="login-box">
+    <h2>Admin Login</h2>
+    <input type="password" id="admin-password" placeholder="Enter password">
+    <button id="login-btn">Login</button>
+</div>
+
+<div class="history-overlay"></div>
+<div class="history-box">
+    <h2>Item Collection History</h2>
+
+    <div class="history-inputs admin-only">
+        <input type="text" id="collector-name" placeholder="Collected by">
+        <input type="date" id="collection-date">
+        <textarea id="collection-notes" placeholder="Notes"></textarea>
+        <button id="save-history" class="admin-only save-history">Save</button>
+    </div>
+
+    <button id="cancel-history">Close</button>
+    <div id="history-list"></div>
+</div>
+
+
+<script src="script.js"></script>
 </body>
 </html>
-
-

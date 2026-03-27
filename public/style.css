@@ -4,8 +4,8 @@
     box-sizing: border-box;
 }
 html,body{
-max-width:100%;
-overflow-x:hidden;
+    max-width:100%;
+    overflow-x:hidden;
 }
 body {
     font-family: 'Poppins', sans-serif;
@@ -24,7 +24,6 @@ body {
     justify-content: space-between;
     padding: 0 40px;
 }
-
 .left {
     display: flex;
     align-items: center;
@@ -53,7 +52,11 @@ body {
     color: white;
     opacity: 0.9;
 }
-
+.text3{
+   font-size: 30px; 
+   color:white;
+   padding:130px;
+}
 .nav ul {
     list-style: none;
     display: flex;

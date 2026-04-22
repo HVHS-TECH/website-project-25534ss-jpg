@@ -1,23 +1,14 @@
-const API_URL = "http://localhost:3000";
+let items = JSON.parse(localStorage.getItem("items")) || [];
+let history = JSON.parse(localStorage.getItem("history")) || [];
 
-// ============================
-// Backend-related starts here
-// ============================
-
-let adminToken = sessionStorage.getItem("adminToken") || null;
-let isAdmin = !!adminToken;
-
-// ============================
-// Backend-related ends here
-// ============================
-
-
-// ============================
-// Frontend-related starts here
-// ============================
+function saveDB() {
+  localStorage.setItem("items", JSON.stringify(items));
+  localStorage.setItem("history", JSON.stringify(history));
+}
 
 let editingItemId = null;
 let selectedItemIdForHistory = null;
+let isAdmin = false;
 
 const container = document.querySelector(".container");
 
@@ -55,21 +46,7 @@ const collectionNotesInput = document.getElementById("collection-notes");
 
 const historyList = document.getElementById("history-list");
 
-// Search bar filter
 const searchInput = document.getElementById("myInput");
-
-searchInput.addEventListener("input", function() {
-    const filter = this.value.toUpperCase();
-    const cards = document.querySelectorAll(".info-container");
-
-    cards.forEach(card => {
-        const title = card.querySelector("h2").textContent || "";
-        card.style.display = title.toUpperCase().includes(filter) ? "" : "none";
-    });
-}); 
-// ============================
-// Backend-related starts here
-// ============================
 
 function updateAdminUI() {
   document.querySelectorAll(".admin-only").forEach(el => {
@@ -78,81 +55,41 @@ function updateAdminUI() {
 }
 
 loginLink.onclick = () => {
-  if (!isAdmin) showLogin();
+  loginOverlay.style.display = "block";
+  loginBox.style.display = "block";
 };
 
-loginBtn.onclick = async () => {
-  try {
-
-    const res = await fetch(`${API_URL}/login`, {
-      method: "POST",
-      headers: {"Content-Type":"application/json"},
-      body: JSON.stringify({password: adminPasswordInput.value})
-    });
-
-    if(!res.ok) throw new Error();
-
-    const data = await res.json();
-
-    adminToken = data.token;
-    sessionStorage.setItem("adminToken", adminToken);
-
+loginBtn.onclick = () => {
+  if (adminPasswordInput.value === "admin6767") {
     isAdmin = true;
     updateAdminUI();
-
     loginOverlay.style.display = "none";
     loginBox.style.display = "none";
-
-    adminPasswordInput.value = "";
-
-    loadItems();
-
-  } catch {
-
-    alert("Incorrect password");
-
-    adminPasswordInput.value = "";
-
-    loginOverlay.style.display = "none";
-    loginBox.style.display = "none";
+  } else {
+    alert("Wrong password");
   }
+  adminPasswordInput.value = "";
 };
 
 logoutBtn.onclick = () => {
-
-  sessionStorage.removeItem("adminToken");
-
-  adminToken = null;
   isAdmin = false;
-
   updateAdminUI();
-
-  loadItems();
 };
 
-// ============================
-// Backend-related ends here
-// ============================
+searchInput.addEventListener("input", function () {
+  const filter = this.value.toUpperCase();
+  const cards = document.querySelectorAll(".info-container");
 
+  cards.forEach(card => {
+    const title = card.querySelector("h2")?.textContent || "";
+    card.style.display = title.toUpperCase().includes(filter) ? "" : "none";
+  });
+});
 
-// ============================
-// Frontend-related continues
-// ============================
-
-function showLogin() {
-  loginOverlay.style.display = "block";
-  loginBox.style.display = "block";
-}
-
-async function loadItems() {
-
-  const res = await fetch(`${API_URL}/items`);
-  const items = await res.json();
-
+function loadItems() {
   container.innerHTML = "";
 
   items.forEach(item => {
-
     const card = document.createElement("div");
     card.className = "info-container";
 
@@ -169,225 +106,156 @@ async function loadItems() {
     card.appendChild(location);
     card.appendChild(desc);
 
-    if(isAdmin){
+    const editBtn = document.createElement("button");
+    editBtn.textContent = "Edit";
+    editBtn.className = "edit-btn";
+    editBtn.onclick = () => openEditPopup(item);
 
-      const editBtn = document.createElement("button");
-      editBtn.textContent = "Edit";
-      editBtn.className = "edit-btn";
-      editBtn.onclick = ()=>openEditPopup(item);
+    const deleteBtn = document.createElement("button");
+    deleteBtn.textContent = "Delete";
+    deleteBtn.className = "delete-btn";
+    deleteBtn.onclick = () => {
+      items = items.filter(i => i.id !== item.id);
+      saveDB();
+      loadItems();
+    };
 
-      const deleteBtn = document.createElement("button");
-      deleteBtn.textContent = "Delete";
-      deleteBtn.className = "delete-btn";
-      deleteBtn.onclick = ()=>{ if(confirm("Delete this item?")){ deleteItem(item.id); } };
+    const doneBtn = document.createElement("button");
+    doneBtn.textContent = "Collected";
+    doneBtn.className = "done-btn";
+    doneBtn.onclick = () => openHistoryPopup(item.id, true);
 
-      const doneBtn = document.createElement("button");
-      doneBtn.textContent = "Collected";
-      doneBtn.className = "done-btn";
-      doneBtn.onclick = ()=>openHistoryPopup(item.id,true);
-
-      card.appendChild(editBtn);
-      card.appendChild(deleteBtn);
-      card.appendChild(doneBtn);
-    }
+    card.appendChild(editBtn);
+    card.appendChild(deleteBtn);
+    card.appendChild(doneBtn);
 
     container.appendChild(card);
   });
 }
 
-addButton.onclick = ()=>{
-
+addButton.onclick = () => {
   editingItemId = null;
 
-  popupTitle.textContent="Add Item";
+  popupTitle.textContent = "Add Item";
 
-  titleInput.value="";
-  locationInput.value="";
-  descriptionInput.value="";
+  titleInput.value = "";
+  locationInput.value = "";
+  descriptionInput.value = "";
 
-  popupOverlay.style.display="block";
-  popupBox.style.display="block";
+  popupOverlay.style.display = "block";
+  popupBox.style.display = "block";
 };
 
-cancelPopupBtn.onclick=()=>{
-  popupOverlay.style.display="none";
-  popupBox.style.display="none";
+cancelPopupBtn.onclick = () => {
+  popupOverlay.style.display = "none";
+  popupBox.style.display = "none";
 };
 
-function openEditPopup(item){
+function openEditPopup(item) {
+  editingItemId = item.id;
 
-  editingItemId=item.id;
+  popupTitle.textContent = "Edit Item";
 
-  popupTitle.textContent="Edit Item";
+  titleInput.value = item.title;
+  locationInput.value = item.location;
+  descriptionInput.value = item.description;
 
-  titleInput.value=item.title;
-  locationInput.value=item.location;
-  descriptionInput.value=item.description;
-
-  popupOverlay.style.display="block";
-  popupBox.style.display="block";
+  popupOverlay.style.display = "block";
+  popupBox.style.display = "block";
 }
 
-addInfoBtn.onclick=async()=>{
-
-  const data={
-    title:titleInput.value,
-    location:locationInput.value,
-    description:descriptionInput.value
+addInfoBtn.onclick = () => {
+  const data = {
+    id: editingItemId || Date.now(),
+    title: titleInput.value,
+    location: locationInput.value,
+    description: descriptionInput.value
   };
 
-  const headers={"Content-Type":"application/json"};
-
-  if(adminToken) headers["x-admin-token"]=adminToken;
-
-  if(editingItemId){
-    await fetch(`${API_URL}/items/${editingItemId}`,{
-      method:"PUT",
-      headers,
-      body:JSON.stringify(data)
-    });
-  }else{
-    await fetch(`${API_URL}/items`,{
-      method:"POST",
-      headers,
-      body:JSON.stringify(data)
-    });
+  if (editingItemId) {
+    items = items.map(i => i.id === editingItemId ? data : i);
+  } else {
+    items.push(data);
   }
 
-  popupOverlay.style.display="none";
-  popupBox.style.display="none";
-
+  saveDB();
   loadItems();
+
+  popupOverlay.style.display = "none";
+  popupBox.style.display = "none";
 };
 
-// ============================
-// Backend-related starts here
-// ============================
-
-async function deleteItem(id){
-
-  await fetch(`${API_URL}/items/${id}`,{
-    method:"DELETE",
-    headers:{"x-admin-token":adminToken}
-  });
-
-  loadItems();
-}
-
-// ============================
-// Backend-related ends here
-// ============================
-
-
-// ============================
-// Frontend-related continues
-// ============================
-
-historyLink.onclick=()=>{
-  if(!isAdmin) return showLogin();
-  openHistoryPopup(null,false);
+historyLink.onclick = () => {
+  openHistoryPopup(null, false);
 };
 
-function openHistoryPopup(itemId=null,showCollectorInputs=false){
+function openHistoryPopup(itemId = null, showInputs = false) {
+  selectedItemIdForHistory = itemId;
 
-  selectedItemIdForHistory=itemId;
+  historyOverlay.style.display = "block";
+  historyBox.style.display = "block";
 
-  historyOverlay.style.display="block";
-  historyBox.style.display="block";
-
-  document.querySelector(".history-inputs").style.display=showCollectorInputs?"block":"none";
+  document.querySelector(".history-inputs").style.display = showInputs ? "block" : "none";
 
   loadHistoryList();
 }
 
-cancelHistoryBtn.onclick=()=>{
-  historyOverlay.style.display="none";
-  historyBox.style.display="none";
+cancelHistoryBtn.onclick = () => {
+  historyOverlay.style.display = "none";
+  historyBox.style.display = "none";
 };
 
-saveHistoryBtn.onclick=async()=>{
-
-  const data={
-    itemId:selectedItemIdForHistory,
-    name:collectorNameInput.value,
-    date:collectionDateInput.value,
-    notes:collectionNotesInput.value
-  };
-
-  await fetch(`${API_URL}/history`,{
-    method:"POST",
-    headers:{
-      "Content-Type":"application/json",
-      "x-admin-token":adminToken
-    },
-    body:JSON.stringify(data)
+saveHistoryBtn.onclick = () => {
+  history.push({
+    id: Date.now(),
+    itemId: selectedItemIdForHistory,
+    name: collectorNameInput.value,
+    date: collectionDateInput.value,
+    notes: collectionNotesInput.value
   });
 
-  collectorNameInput.value="";
-  collectionDateInput.value="";
-  collectionNotesInput.value="";
-
+  saveDB();
   loadHistoryList();
+
+  collectorNameInput.value = "";
+  collectionDateInput.value = "";
+  collectionNotesInput.value = "";
 };
 
-// ============================
-// Backend-related starts here
-// ============================
+function loadHistoryList() {
+  historyList.innerHTML = "";
 
-async function loadHistoryList(){
+  history.forEach(entry => {
+    const div = document.createElement("div");
+    div.className = "history-entry";
 
-  const res=await fetch(`${API_URL}/history`);
-  const history=await res.json();
+    const name = document.createElement("p");
+    name.textContent = "Name: " + entry.name;
 
-  historyList.innerHTML="";
+    const date = document.createElement("p");
+    date.textContent = "Date: " + entry.date;
 
-  history.forEach(entry=>{
-
-    const div=document.createElement("div");
-    div.className="history-entry";
-
-    const name=document.createElement("p");
-    name.textContent="Name: "+entry.name;
-
-    const date=document.createElement("p");
-    date.textContent="Date: "+entry.date;
-
-    const notes=document.createElement("p");
-    notes.textContent=entry.notes;
+    const notes = document.createElement("p");
+    notes.textContent = entry.notes;
 
     div.appendChild(name);
     div.appendChild(date);
     div.appendChild(notes);
 
-    if(isAdmin){
+    const delBtn = document.createElement("button");
+    delBtn.textContent = "Delete";
+    delBtn.className = "delete-btn";
+    delBtn.onclick = () => {
+      history = history.filter(h => h.id !== entry.id);
+      saveDB();
+      loadHistoryList();
+    };
 
-      const delBtn=document.createElement("button");
-      delBtn.textContent="Delete";
-      delBtn.className="delete-btn";
-
-      delBtn.onclick=async()=>{
-        await fetch(`${API_URL}/history/${entry.id}`,{
-          method:"DELETE",
-          headers:{"x-admin-token":adminToken}
-        });
-        div.remove();
-      };
-
-      div.appendChild(delBtn);
-    }
-
+    div.appendChild(delBtn);
     historyList.appendChild(div);
   });
 }
 
-// ============================
-// Backend-related ends here
-// ============================
-
-
-// ============================
-// Frontend-related final
-// ============================
-
 updateAdminUI();
 loadItems();
+loadHistoryList();
